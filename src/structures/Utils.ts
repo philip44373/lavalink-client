@@ -65,27 +65,30 @@ export class ManagerUtils {
             }
 
 
-            const r = {
-                encoded: data.encoded,
-                info: {
-                    identifier: data.info.identifier,
-                    title: data.info.title,
-                    author: data.info.author,
-                    duration: (data as Track).info?.duration || (data as LavalinkTrack).info?.length,
-                    artworkUrl: data.info.artworkUrl || data.pluginInfo?.artworkUrl || (data as any).plugin?.artworkUrl,
-                    uri: data.info.uri,
-                    sourceName: data.info.sourceName,
-                    isSeekable: data.info.isSeekable,
-                    isStream: data.info.isStream,
-                    isrc: data.info.isrc,
-                },
-                userData: {
-                    ...data.userData,
-                    requester: transformedRequester
-                },
-                pluginInfo: this.buildPluginInfo(data, "clientData" in data ? data.clientData : {}),
-                requester: transformedRequester || this.getTransformedRequester(this.LavalinkManager?.options?.client),
-            } as Track;
+const r = {
+    encoded: data.encoded,
+    info: {
+        identifier: data.info.identifier,
+        title: data.info.title,
+        author: data.info.sourceName === 'spotify'
+            ? (data.pluginInfo?.artists?.map((x: any) => x.name).join(', ') || 'Unknown Artist')
+            : data.info.author,
+        duration: (data as Track).info?.duration || (data as LavalinkTrack).info?.length,
+        artworkUrl: data.info.artworkUrl || data.pluginInfo?.artworkUrl || (data as any).plugin?.artworkUrl,
+        uri: data.info.uri,
+        sourceName: data.info.sourceName,
+        isSeekable: data.info.isSeekable,
+        isStream: data.info.isStream,
+        isrc: data.info.isrc,
+    },
+    userData: {
+        ...data.userData,
+        requester: transformedRequester
+    },
+    pluginInfo: this.buildPluginInfo(data, "clientData" in data ? data.clientData : {}),
+    requester: transformedRequester || this.getTransformedRequester(this.LavalinkManager?.options?.client),
+};
+
             Object.defineProperty(r, TrackSymbol, { configurable: true, value: true });
             return r;
         } catch (error) {
@@ -106,6 +109,7 @@ export class ManagerUtils {
      * @param query
      * @param requester
      */
+
     buildUnresolvedTrack(query: UnresolvedQuery | UnresolvedTrack, requester: unknown) {
         if (typeof query === "undefined")
             throw new RangeError('Argument "query" must be present.');
