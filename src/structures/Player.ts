@@ -439,20 +439,32 @@ export class Player {
     async search(query: SearchQuery, requestUser: unknown, throwOnEmpty: boolean = false) {
         const Query = this.LavalinkManager.utils.transformQuery(query);
 
-        // If caller passed a type or types, use lavasearch (filtered search)
-        const wantTypes = (typeof query === "object" && (query.type || query.types))
-            ? ([] as string[]).concat(query.type as any || []).concat(query.types || [])
-            : undefined;
-        if (wantTypes?.length) {
-            // Only forward to lavasearch when not a direct link
-            if (!/^https?:\/\//.test(Query.query)) {
-                return this.node.lavaSearch({
-                    query: Query.query,
-                    // re-use mapped source from transformQuery
-                    source: Query.source as any,
-                    types: wantTypes as any,
-                }, requestUser, throwOnEmpty);
+        // Check if user specified a type or types for filtering
+        let wantTypes: string[] | undefined;
+        
+        if (typeof query === "object") {
+            if (query.type) {
+                // Handle single type or array of types
+                wantTypes = Array.isArray(query.type) ? query.type : [query.type];
+            } else if (query.types) {
+                // Handle multiple types array
+                wantTypes = query.types;
             }
+        }
+        
+        // If no types specified, default to "track" for song searches
+        if (!wantTypes) {
+            wantTypes = ["track"];
+        }
+
+        // Only forward to lavasearch when not a direct link
+        if (!/^https?:\/\//.test(Query.query)) {
+            return this.node.lavaSearch({
+                query: Query.query,
+                // re-use mapped source from transformQuery
+                source: Query.source as any,
+                types: wantTypes as any,
+            }, requestUser, throwOnEmpty);
         }
 
         if (["bcsearch", "bandcamp"].includes(Query.source) && !this.node.info.sourceManagers.includes("bandcamp")) {
