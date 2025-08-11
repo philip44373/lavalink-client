@@ -72,6 +72,8 @@ export interface PluginInfo {
     artistUrl?: string;
     /** The url of the artist artwork */
     artistArtworkUrl?: string;
+    /** The artists involved (as provided by some plugins, e.g., lavasrc) */
+    artists?: { name: string }[];
     /** The url of the preview */
     previewUrl?: string;
     /** Whether the track is a preview */

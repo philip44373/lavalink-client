@@ -598,7 +598,11 @@ export type SearchQuery = {
     /** Extra url query params to use, e.g. for flowertts */
     extraQueryUrlParams?: URLSearchParams;
     /** Source to append to the search query string */
-    source?: SearchPlatform
+    source?: SearchPlatform,
+    /** Optional single type to filter results when using enhanced search */
+    type?: LavaSearchType | LavaSearchType[],
+    /** Optional multiple types to filter results when using enhanced search */
+    types?: LavaSearchType[]
 } | /** Our just the search query / identifier string */ string;
 /** SearchQuery Object for Lavalink LavaSearch Plugin requests */
 export type LavaSearchQuery = {

@@ -439,6 +439,22 @@ export class Player {
     async search(query: SearchQuery, requestUser: unknown, throwOnEmpty: boolean = false) {
         const Query = this.LavalinkManager.utils.transformQuery(query);
 
+        // If caller passed a type or types, use lavasearch (filtered search)
+        const wantTypes = (typeof query === "object" && (query.type || query.types))
+            ? ([] as string[]).concat(query.type as any || []).concat(query.types || [])
+            : undefined;
+        if (wantTypes?.length) {
+            // Only forward to lavasearch when not a direct link
+            if (!/^https?:\/\//.test(Query.query)) {
+                return this.node.lavaSearch({
+                    query: Query.query,
+                    // re-use mapped source from transformQuery
+                    source: Query.source as any,
+                    types: wantTypes as any,
+                }, requestUser, throwOnEmpty);
+            }
+        }
+
         if (["bcsearch", "bandcamp"].includes(Query.source) && !this.node.info.sourceManagers.includes("bandcamp")) {
             if (this.LavalinkManager.options?.advancedOptions?.enableDebugEvents) {
                 this.LavalinkManager.emit("debug", DebugEvents.BandcampSearchLokalEngine, {

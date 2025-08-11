@@ -83,7 +83,11 @@ const r = {
     },
     userData: {
         ...data.userData,
-        requester: transformedRequester
+        requester: (typeof transformedRequester === 'object' && transformedRequester !== null)
+            ? (transformedRequester as any)
+            : (typeof transformedRequester === 'string' || typeof transformedRequester === 'number')
+                ? transformedRequester
+                : null
     },
     pluginInfo: this.buildPluginInfo(data, "clientData" in data ? data.clientData : {}),
     requester: transformedRequester || this.getTransformedRequester(this.LavalinkManager?.options?.client),
@@ -551,7 +555,7 @@ async function applyUnresolvedData(resTrack: Track, data: UnresolvedTrack, utils
 
 async function getClosestTrack(data: UnresolvedTrack, player: Player): Promise<Track | undefined> {
     if (!player || !player.node) throw new RangeError("No player with a lavalink node was provided");
-    if (player.LavalinkManager.utils.isTrack(data)) return player.LavalinkManager.utils.buildTrack(data, data.requester);
+    if (player.LavalinkManager.utils.isTrack(data)) return player.LavalinkManager.utils.buildTrack(data, typeof data.requester === 'object' ? data.requester : undefined);
     if (!player.LavalinkManager.utils.isUnresolvedTrack(data)) throw new RangeError("Track is not an unresolved Track");
     if (!data?.info?.title && typeof data.encoded !== "string" && !data.info.uri) throw new SyntaxError("the track uri / title / encoded Base64 string is required for unresolved tracks")
     if (!data.requester) throw new SyntaxError("The requester is required");
